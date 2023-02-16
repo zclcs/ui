@@ -1,39 +1,51 @@
+import { ContentTypeEnum } from "@/enums/httpEnum";
 import { http } from "@/utils/http";
 
 export type UserResult = {
-  success: boolean;
-  data: {
-    /** 用户名 */
-    username: string;
-    /** 当前登陆用户的角色 */
-    roles: Array<string>;
-    /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
-    refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
-    expires: Date;
-  };
+  /** 用户信息 */
+  user_info: UserInfo;
+  /** `token` */
+  access_token: string;
+  /** 用于调用刷新`accessToken`的接口时所需的`token` */
+  refresh_token: string;
+  /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
+  expires_in: number;
+};
+
+export type UserInfo = {
+  username: string;
+  roles: Array<string>;
+  authorities: Array<string>;
 };
 
 export type RefreshTokenResult = {
-  success: boolean;
-  data: {
-    /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
-    refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
-    expires: Date;
-  };
+  /** `token` */
+  access_token: string;
+  /** 用于调用刷新`accessToken`的接口时所需的`token` */
+  refresh_token: string;
+  /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
+  expires_in: number;
 };
 
 /** 登录 */
-export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+export const getLogin = (params?: object, data?: object) => {
+  return http.request<UserResult>("post", "/auth/oauth2/token", {
+    params,
+    headers: {
+      authorization: "Basic emNsY3M6MTIzNDU2",
+      "Content-Type": ContentTypeEnum.FORM_URLENCODED
+    },
+    data
+  });
 };
 
 /** 刷新token */
 export const refreshTokenApi = (data?: object) => {
-  return http.request<RefreshTokenResult>("post", "/refreshToken", { data });
+  return http.request<UserResult>("post", "/auth/oauth2/token", {
+    headers: {
+      authorization: "Basic emNsY3M6MTIzNDU2",
+      "Content-Type": ContentTypeEnum.FORM_URLENCODED
+    },
+    data
+  });
 };

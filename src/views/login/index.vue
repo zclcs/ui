@@ -7,10 +7,11 @@ import { initRouter } from "@/router/utils";
 import { useNav } from "@/layout/hooks/useNav";
 import type { FormInstance } from "element-plus";
 import { useLayout } from "@/layout/hooks/useLayout";
+import { ReImageVerify } from "@/components/ReImageVerify";
 import { useUserStoreHook } from "@/store/modules/user";
 import { bg, avatar, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { ref, reactive, toRaw, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, watch, toRaw, onMounted, onBeforeUnmount } from "vue";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 
 import dayIcon from "@/assets/svg/day.svg?component";
@@ -21,9 +22,11 @@ import User from "@iconify-icons/ri/user-3-fill";
 defineOptions({
   name: "Login"
 });
+const imgCode = ref("");
 const router = useRouter();
 const loading = ref(false);
 const ruleFormRef = ref<FormInstance>();
+const reImageVerifyRef = ref();
 
 const { initStorage } = useLayout();
 initStorage();
@@ -33,9 +36,15 @@ dataThemeChange();
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123"
+  username: "zclcs",
+  password: "123456",
+  code: "",
+  random: ""
 });
+
+const changeImageCode = () => {
+  reImageVerifyRef.value.getImgCode();
+};
 
 const onLogin = async (formEl: FormInstance | undefined) => {
   loading.value = true;
@@ -43,15 +52,25 @@ const onLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       useUserStoreHook()
-        .loginByUsername({ username: ruleForm.username, password: "admin123" })
+        .loginByUsername({
+          username: ruleForm.username,
+          password: ruleForm.password,
+          code: ruleForm.code,
+          randomStr: ruleForm.random
+        })
         .then(res => {
-          if (res.success) {
+          console.log(res);
+          if (res) {
             // 获取后端路由
             initRouter().then(() => {
               router.push("/");
               message("登录成功", { type: "success" });
             });
           }
+        })
+        .catch(() => {
+          changeImageCode();
+          loading.value = false;
         });
     } else {
       loading.value = false;
@@ -73,6 +92,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.document.removeEventListener("keypress", onkeypress);
+});
+
+watch(imgCode, value => {
+  console.log(imgCode);
+  console.log(value);
 });
 </script>
 
@@ -135,6 +159,33 @@ onBeforeUnmount(() => {
                   placeholder="密码"
                   :prefix-icon="useRenderIcon(Lock)"
                 />
+              </el-form-item>
+            </Motion>
+
+            <Motion :delay="200">
+              <el-form-item
+                :rules="[
+                  {
+                    required: true,
+                    message: '请输入验证码',
+                    trigger: 'blur'
+                  }
+                ]"
+                prop="code"
+              >
+                <el-input
+                  clearable
+                  v-model="ruleForm.code"
+                  placeholder="验证码"
+                  :prefix-icon="useRenderIcon('ri:shield-keyhole-line')"
+                >
+                  <template v-slot:append>
+                    <ReImageVerify
+                      ref="reImageVerifyRef"
+                      v-model:random="ruleForm.random"
+                    />
+                  </template>
+                </el-input>
               </el-form-item>
             </Motion>
 
