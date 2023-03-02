@@ -40,8 +40,9 @@ export const getLogin = (params?: object, data?: object) => {
 };
 
 /** 刷新token */
-export const refreshTokenApi = (data?: object) => {
+export const refreshTokenApi = (params?: object, data?: object) => {
   return http.request<UserResult>("post", "/auth/oauth2/token", {
+    params,
     headers: {
       authorization: "Basic emNsY3M6MTIzNDU2",
       "Content-Type": ContentTypeEnum.FORM_URLENCODED

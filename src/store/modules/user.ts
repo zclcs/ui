@@ -69,9 +69,9 @@ export const useUserStore = defineStore({
       router.push("/login");
     },
     /** 刷新`token` */
-    async handRefreshToken(data) {
+    async handRefreshToken(params, data) {
       return new Promise<RefreshTokenResult>((resolve, reject) => {
-        refreshTokenApi(data)
+        refreshTokenApi(params, data)
           .then(data => {
             if (data) {
               setToken(data);
